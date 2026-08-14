@@ -109,10 +109,44 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
-		<script src="index.js"></script>
-		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":586800,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
-const GODOT_THREADS_ENABLED = false;
+<script src="index.js"></script>
+<script>
+const GODOT_CONFIG = {
+    "args": [],
+    "canvasResizePolicy": 2,
+    "ensureCrossOriginIsolationHeaders": true,
+    "executable": "index",
+    "experimentalVK": true,
+    "fileSizes": {
+        "index.pck": 586800,
+        "index.wasm": 43699190
+    },
+    "focusCanvas": true,
+    "gdextensionLibs": []
+};
+
+
+const WASM_URL = "https://html-classic.itch.zone/html/8319020/AwuWebFinalV2/Build/AwuWebFinalV2.wasm";
+
+// Redirigir únicamente la carga del WASM
+const originalInstantiateWasm = WebAssembly.instantiateStreaming;
+
+WebAssembly.instantiateStreaming = function(response, importObject) {
+    if (response instanceof Promise) {
+        return response.then(r => {
+            if (r.url && r.url.endsWith("index.wasm")) {
+                return WebAssembly.instantiateStreaming(
+                    fetch(WASM_URL),
+                    importObject
+                );
+            }
+            return WebAssembly.instantiateStreaming(r, importObject);
+        });
+    }
+
+    return originalInstantiateWasm.call(this, response, importObject);
+};
+
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
@@ -217,4 +251,5 @@ const engine = new Engine(GODOT_CONFIG);
 		</script>
 	</body>
 </html>
+
 
